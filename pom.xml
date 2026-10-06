@@ -19,6 +19,7 @@
 
     <modules>
         <module>sesh-parent</module>
+        <module>sesh-bom</module>
         <module>sesh-core</module>
     </modules>
 
