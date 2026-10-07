@@ -19,7 +19,7 @@ public class InMemorySession implements Session {
 		this.id = id;
 		this.creationTime = now;
 		this.lastAccess = now;
-		this.expires = now.plus(24, ChronoUnit.HOURS);
+		this.expires = now.plus(10, ChronoUnit.MINUTES);
 	}
 
 	public InMemorySession(String id, Instant expires) {
