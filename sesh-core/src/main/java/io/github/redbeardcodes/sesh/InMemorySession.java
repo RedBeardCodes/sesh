@@ -12,7 +12,7 @@ public class InMemorySession implements Session {
 	private Instant lastAccess;
 	private Instant expires;
 
-	private Map<String, Object> session = new HashMap<String, Object>();
+	private Map<String, Object> sessionData = new HashMap<String, Object>();
 
 	public InMemorySession(String id) {
 		Instant now = Instant.now();
@@ -34,17 +34,17 @@ public class InMemorySession implements Session {
 
 	@Override
 	public <T> T get(String name, Class<T> type) {
-		return type.cast(session.get(name));
+		return type.cast(sessionData.get(name));
 	}
 
 	@Override
 	public void set(String name, Object value) {
-		session.put(name, value);
+		sessionData.put(name, value);
 	}
 
 	@Override
 	public void remove(String name) {
-		session.remove(name);
+		sessionData.remove(name);
 	}
 
 	@Override
@@ -64,6 +64,10 @@ public class InMemorySession implements Session {
 
 	@Override
 	public void invalidate() {
-		session.clear();
+		sessionData.clear();
+	}
+
+	Map<String, Object> getSessionData() {
+		return this.sessionData;
 	}
 }

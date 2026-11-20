@@ -10,7 +10,7 @@ public class SessionTest {
 
 	@Test
 	public void testThatNewSessionsAreSuccessfullyCreated() {
-		Session s = new InMemorySession("TestSession");
+		Session s = new InMemorySession("TestSessionSuccess");
 		LocalTime created = LocalTime.ofInstant(s.createdAt(), ZoneId.systemDefault());
 		LocalTime lastAccessed = LocalTime.ofInstant(s.lastAccessAt(), ZoneId.systemDefault());
 		LocalTime expiry = LocalTime.ofInstant(s.expiresAt(), ZoneId.systemDefault());
@@ -27,6 +27,34 @@ public class SessionTest {
 			Assertions.assertEquals(created.getHour(), expiry.getHour(), "expiry hour is not correct");
 
 		Assertions.assertEquals(created.plusMinutes(10).getMinute(), expiry.getMinute(), "expiry minute is not correct");
+	}
+
+	@Test
+	public void testThatDataCanBeAddedToAndRetrievedFromSessions() {
+		Session s = new InMemorySession("TestAddingSessionData");
+		s.set("foo", "bar");
+		Assertions.assertEquals(s.get("foo", String.class), "bar");
+	}
+
+	@Test
+	public void testThatRemovedDataIsRetrievedAsNull() {
+		Session s = new InMemorySession("TestRemovingSessionData");
+		s.set("foo", "bar");
+		Assertions.assertEquals(s.get("foo", String.class), "bar");
+		s.remove("foo");
+		Assertions.assertNull(s.get("foo", String.class));
+	}
+
+	@Test
+	public void testThatInvalidatedSessionsAreEmpty() {
+		InMemorySession s = new InMemorySession("TestInvalidatedSession");
+		s.set("foo", "bar");
+		s.set("fizz", "buzz");
+		Assertions.assertEquals(s.get("foo", String.class), "bar");
+		Assertions.assertEquals(s.get("fizz", String.class), "buzz");
 		s.invalidate();
+		Assertions.assertNull(s.get("foo", String.class));
+		Assertions.assertNull(s.get("fizz", String.class));
+		Assertions.assertTrue(s.getSessionData().isEmpty());
 	}
 }
