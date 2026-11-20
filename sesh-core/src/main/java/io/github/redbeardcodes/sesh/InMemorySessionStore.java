@@ -1,23 +1,25 @@
 package io.github.redbeardcodes.sesh;
 
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class InMemorySessionStore implements SessionStore {
 
-	private ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<String, Session>();
-	private AtomicLong idGenerator = new AtomicLong();
+	private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<String, Session>();
 
 	@Override
-	public Session load(String id) {
-		return sessions.get(id);
+	public Optional<Session> load(String id) {
+		return Optional.ofNullable(sessions.get(id));
 	}
 
 	@Override
 	public Session create() {
-		String id = "Session" + String.valueOf(idGenerator.incrementAndGet());
-		Session session = new InMemorySession(id);
-		this.save(session);
+		Session session;
+		do {
+			String id = "Session" + UUID.randomUUID();
+			session = new InMemorySession(id);
+		} while (sessions.putIfAbsent(session.id(), session) != null);
 		return session;
 	}
 
