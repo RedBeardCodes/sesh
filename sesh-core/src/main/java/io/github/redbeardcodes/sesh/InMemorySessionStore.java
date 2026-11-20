@@ -9,12 +9,12 @@ public class InMemorySessionStore implements SessionStore {
 	private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<String, Session>();
 
 	@Override
-	public Optional<Session> load(String id) {
+	public synchronized Optional<Session> load(String id) {
 		return Optional.ofNullable(sessions.get(id));
 	}
 
 	@Override
-	public Session create() {
+	public synchronized Session create() {
 		Session session;
 		do {
 			String id = "Session" + UUID.randomUUID();
@@ -24,12 +24,16 @@ public class InMemorySessionStore implements SessionStore {
 	}
 
 	@Override
-	public void save(Session session) {
+	public synchronized void save(Session session) {
+		if (session.isInvalidated()) {
+			sessions.remove(session.id());
+			return;
+		}
 		sessions.put(session.id(), session);
 	}
 
 	@Override
-	public void delete(String id) {
+	public synchronized void delete(String id) {
 		sessions.remove(id);
 	}
 }

@@ -2,6 +2,16 @@ package io.github.redbeardcodes.sesh;
 
 import java.time.Instant;
 
+/**
+ * Represents an individual session.
+ *
+ * <p>Implementations must support concurrent access from multiple threads.
+ * Implementations must ensure thread-safe access to session attributes
+ * and lifecycle operations.
+ *
+ * <p>Invalidation must be atomic and irreversible. Once invalidated,
+ * subsequent operations must not permit reading or modifying session data.
+ */
 public interface Session {
 
 	String id();
@@ -15,5 +25,6 @@ public interface Session {
 	Instant expiresAt();
 
 	void invalidate();
+	boolean isInvalidated();
 
 }

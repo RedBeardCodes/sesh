@@ -7,14 +7,14 @@ import java.util.Map;
 
 public class InMemorySession implements Session {
 
-	private String id;
+	private final String id;
 	private Instant creationTime;
 	private Instant lastAccess;
 	private Instant expires;
 
 	private boolean invalidated = false;
 
-	private Map<String, Object> sessionData = new HashMap<String, Object>();
+	private final Map<String, Object> sessionData = new HashMap<String, Object>();
 
 	public InMemorySession(String id) {
 		Instant now = Instant.now();
@@ -35,19 +35,19 @@ public class InMemorySession implements Session {
 	}
 
 	@Override
-	public <T> T get(String name, Class<T> type) {
+	public synchronized <T> T get(String name, Class<T> type) {
 		checkValid();
 		return type.cast(sessionData.get(name));
 	}
 
 	@Override
-	public void set(String name, Object value) {
+	public synchronized void set(String name, Object value) {
 		checkValid();
 		sessionData.put(name, value);
 	}
 
 	@Override
-	public void remove(String name) {
+	public synchronized void remove(String name) {
 		checkValid();
 		sessionData.remove(name);
 	}
@@ -69,8 +69,15 @@ public class InMemorySession implements Session {
 
 	@Override
 	public void invalidate() {
+		if (invalidated)
+			return;
 		sessionData.clear();
 		this.invalidated = true;
+	}
+
+	@Override
+	public synchronized boolean isInvalidated() {
+		return invalidated;
 	}
 
 	Map<String, Object> getSessionData() {
@@ -78,7 +85,8 @@ public class InMemorySession implements Session {
 	}
 
 	private void checkValid() {
-		if (this.invalidated)
+		if (invalidated)
 			throw new IllegalStateException("Session has been invalidated.");
 	}
+
 }
