@@ -53,8 +53,7 @@ public class SessionTest {
 		Assertions.assertEquals(s.get("foo", String.class), "bar");
 		Assertions.assertEquals(s.get("fizz", String.class), "buzz");
 		s.invalidate();
-		Assertions.assertNull(s.get("foo", String.class));
-		Assertions.assertNull(s.get("fizz", String.class));
+		Assertions.assertThrows(IllegalStateException.class, () -> s.get("foo", String.class));
 		Assertions.assertTrue(s.getSessionData().isEmpty());
 	}
 }

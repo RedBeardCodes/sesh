@@ -12,6 +12,8 @@ public class InMemorySession implements Session {
 	private Instant lastAccess;
 	private Instant expires;
 
+	private boolean invalidated = false;
+
 	private Map<String, Object> sessionData = new HashMap<String, Object>();
 
 	public InMemorySession(String id) {
@@ -34,16 +36,19 @@ public class InMemorySession implements Session {
 
 	@Override
 	public <T> T get(String name, Class<T> type) {
+		checkValid();
 		return type.cast(sessionData.get(name));
 	}
 
 	@Override
 	public void set(String name, Object value) {
+		checkValid();
 		sessionData.put(name, value);
 	}
 
 	@Override
 	public void remove(String name) {
+		checkValid();
 		sessionData.remove(name);
 	}
 
@@ -65,9 +70,15 @@ public class InMemorySession implements Session {
 	@Override
 	public void invalidate() {
 		sessionData.clear();
+		this.invalidated = true;
 	}
 
 	Map<String, Object> getSessionData() {
 		return this.sessionData;
+	}
+
+	private void checkValid() {
+		if (this.invalidated)
+			throw new IllegalStateException("Session has been invalidated.");
 	}
 }
