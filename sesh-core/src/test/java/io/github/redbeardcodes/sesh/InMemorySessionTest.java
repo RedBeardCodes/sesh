@@ -10,10 +10,10 @@ public class InMemorySessionTest {
 
 	@Test
 	public void testThatNewSessionsAreSuccessfullyCreated() {
-		Session s = new InMemorySession("TestSessionSuccess");
+		Session s = new Session("TestSessionSuccess");
 		LocalTime created = LocalTime.ofInstant(s.createdAt(), ZoneId.systemDefault());
-		LocalTime lastAccessed = LocalTime.ofInstant(s.lastAccessAt(), ZoneId.systemDefault());
-		LocalTime expiry = LocalTime.ofInstant(s.expiresAt(), ZoneId.systemDefault());
+		LocalTime lastAccessed = LocalTime.ofInstant(s.updatedAt(), ZoneId.systemDefault());
+		LocalTime expiry = LocalTime.ofInstant(s.expires(), ZoneId.systemDefault());
 
 		// We convert the session time fields to LocalTime and do comparisons.
 		Assertions.assertEquals(LocalTime.now().getHour(), created.getHour(), "created hour is not correct");
@@ -31,29 +31,27 @@ public class InMemorySessionTest {
 
 	@Test
 	public void testThatDataCanBeAddedToAndRetrievedFromSessions() {
-		Session s = new InMemorySession("TestAddingSessionData");
-		s.set("foo", "bar");
+		Session s = new Session("TestAddingSessionData").withAttributes("foo", "bar");
 		Assertions.assertEquals(s.get("foo", String.class), "bar");
 	}
 
 	@Test
 	public void testThatRemovedDataIsRetrievedAsNull() {
-		Session s = new InMemorySession("TestRemovingSessionData");
-		s.set("foo", "bar");
+		Session s = new Session("TestRemovingSessionData").withAttributes("foo", "bar");
 		Assertions.assertEquals(s.get("foo", String.class), "bar");
-		s.remove("foo");
-		Assertions.assertNull(s.get("foo", String.class));
+		Session updated = s.remove("foo");
+		Assertions.assertNull(updated.get("foo", String.class));
 	}
 
 	@Test
 	public void testThatInvalidatedSessionsAreEmpty() {
-		InMemorySession s = new InMemorySession("TestInvalidatedSession");
-		s.set("foo", "bar");
-		s.set("fizz", "buzz");
-		Assertions.assertEquals(s.get("foo", String.class), "bar");
-		Assertions.assertEquals(s.get("fizz", String.class), "buzz");
-		s.invalidate();
-		Assertions.assertThrows(IllegalStateException.class, () -> s.get("foo", String.class));
-		Assertions.assertTrue(s.getSessionData().isEmpty());
+		Session s = new Session("TestInvalidatedSession")
+			.withAttributes("foo", "bar")
+			.withAttributes("fizz", "buzz");
+		Assertions.assertEquals(s.attributes().get("foo").toString(), "bar");
+		Assertions.assertEquals(s.attributes().get("fizz").toString(), "buzz");
+		Session updated = s.invalidate();
+		Assertions.assertThrows(IllegalStateException.class, () -> updated.get("foo", String.class));
+		Assertions.assertTrue(updated.invalidated());
 	}
 }

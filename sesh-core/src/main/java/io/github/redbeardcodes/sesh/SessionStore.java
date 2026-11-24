@@ -13,8 +13,8 @@ import java.util.Optional;
  * persisted or resurrected.
  */
 public interface SessionStore {
-	Optional<Session> load(String id);
 	Session create();
+	Optional<Session> load(String id);
 	void save(Session session);
 	void delete(String id);
 }
