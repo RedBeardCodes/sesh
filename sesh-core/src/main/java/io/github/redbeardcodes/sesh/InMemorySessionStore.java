@@ -11,8 +11,8 @@ public class InMemorySessionStore implements SessionStore {
 	@Override
 	public Optional<Session> load(String id) {
 		Session s = sessions.get(id);
-		if (s.invalidated() || s == null)
-			return Optional.ofNullable(null);
+		if (s == null || s.invalidated())
+			return Optional.empty();
 		return Optional.ofNullable(s);
 	}
 
